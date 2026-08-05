@@ -1,0 +1,2372 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>FalconsStock • Painel Operacional & Análises</title>
+
+  <!-- Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Tabulator (tabela avançada) -->
+  <link href="https://unpkg.com/tabulator-tables@6.3.0/dist/css/tabulator.min.css" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg: #0b1220;
+      --panel: rgba(255,255,255,0.06);
+      --panel-2: rgba(255,255,255,0.08);
+      --panel-3: rgba(255,255,255,0.10);
+      --border: rgba(255,255,255,0.10);
+      --text: rgba(255,255,255,0.92);
+      --muted: rgba(255,255,255,0.62);
+      --muted-2: rgba(255,255,255,0.45);
+      --shadow: 0 18px 55px rgba(0,0,0,0.55);
+      --shadow-soft: 0 10px 30px rgba(0,0,0,0.35);
+      --radius-xl: 18px;
+      --radius-lg: 14px;
+      --radius-md: 12px;
+      --radius-sm: 10px;
+
+      --primary: #7c5cff;          /* roxo sóbrio */
+      --primary-2: #9e8cff;
+      --success: #18c29c;
+      --warning: #ffb020;
+      --danger: #ff5b6e;
+      --info: #2f9bff;
+
+      --focus: 0 0 0 3px rgba(124,92,255,0.28);
+      --grid-gap: 14px;
+      --line: rgba(255,255,255,0.09);
+    }
+
+    [data-theme="light"]{
+      --bg: #f6f7fb;
+      --panel: rgba(12,20,38,0.04);
+      --panel-2: rgba(12,20,38,0.06);
+      --panel-3: rgba(12,20,38,0.08);
+      --border: rgba(12,20,38,0.10);
+      --text: rgba(12,20,38,0.92);
+      --muted: rgba(12,20,38,0.62);
+      --muted-2: rgba(12,20,38,0.45);
+      --shadow: 0 18px 55px rgba(13,18,28,0.12);
+      --shadow-soft: 0 10px 30px rgba(13,18,28,0.10);
+      --line: rgba(12,20,38,0.10);
+    }
+
+    *{ box-sizing: border-box; }
+    html, body { height: 100%; }
+    body{
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Helvetica Neue", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(1200px 600px at 18% 10%, rgba(124,92,255,0.18), transparent 60%),
+        radial-gradient(900px 520px at 80% 16%, rgba(47,155,255,0.16), transparent 55%),
+        radial-gradient(900px 520px at 55% 95%, rgba(24,194,156,0.10), transparent 55%),
+        var(--bg);
+      overflow-x: hidden;
+    }
+
+    a{ color: inherit; }
+    .sr-only{
+      position:absolute; width:1px; height:1px; padding:0; margin:-1px;
+      overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;
+    }
+
+    /* Layout */
+    .app{
+      display: grid;
+      grid-template-columns: 278px 1fr;
+      min-height: 100vh;
+    }
+
+    .sidebar{
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      padding: 18px 14px;
+      border-right: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.03));
+      backdrop-filter: blur(14px);
+    }
+
+    .brand{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 10px 14px;
+      margin-bottom: 10px;
+    }
+    .brand-left{
+      display:flex; align-items:center; gap:10px;
+    }
+    .logo{
+      width: 38px; height: 38px;
+      border-radius: 12px;
+      background: radial-gradient(circle at 30% 30%, var(--primary-2), var(--primary));
+      box-shadow: var(--shadow-soft);
+    }
+    .brand h1{
+      font-size: 14px;
+      margin: 0;
+      letter-spacing: 0.2px;
+    }
+    .brand .build{
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .chip{
+      font-size: 11px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .nav{
+      display:flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 8px;
+    }
+    .nav-group{
+      margin-top: 12px;
+    }
+    .nav-title{
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 10px 10px 6px;
+    }
+    .nav a{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      padding: 10px 10px;
+      text-decoration: none;
+      border-radius: 12px;
+      color: var(--muted);
+      border: 1px solid transparent;
+      user-select: none;
+    }
+    .nav a:hover{
+      color: var(--text);
+      background: var(--panel);
+      border-color: var(--border);
+    }
+    .nav a.active{
+      color: var(--text);
+      background: linear-gradient(180deg, rgba(124,92,255,0.22), rgba(124,92,255,0.10));
+      border-color: rgba(124,92,255,0.35);
+    }
+    .nav .ico{
+      width: 24px;
+      display:flex;
+      justify-content:center;
+      opacity: 0.95;
+    }
+
+    .sidebar-footer{
+      position:absolute;
+      bottom: 16px;
+      left: 14px;
+      right: 14px;
+      padding: 10px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: var(--panel);
+    }
+    .user-line{
+      display:flex; align-items:center; justify-content:space-between; gap: 8px;
+    }
+    .avatar{
+      width: 36px; height: 36px;
+      border-radius: 12px;
+      display:flex; align-items:center; justify-content:center;
+      border: 1px solid var(--border);
+      background: var(--panel-2);
+      color: var(--text);
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+    .user-meta{
+      display:flex; flex-direction:column;
+      gap: 2px;
+      flex: 1;
+      min-width: 0;
+    }
+    .user-meta strong{
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow:hidden;
+      text-overflow: ellipsis;
+    }
+    .user-meta span{
+      font-size: 11px;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow:hidden;
+      text-overflow: ellipsis;
+    }
+
+    .icon-btn{
+      width: 36px; height: 36px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: var(--text);
+      cursor: pointer;
+    }
+    .icon-btn:hover{ background: var(--panel-2); }
+    .icon-btn:focus{ outline: none; box-shadow: var(--focus); }
+
+    .content{
+      padding: 18px 18px 32px;
+    }
+
+    .topbar{
+      display:flex;
+      justify-content: space-between;
+      align-items:center;
+      padding: 14px 14px;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-soft);
+      backdrop-filter: blur(14px);
+      position: sticky;
+      top: 14px;
+      z-index: 5;
+    }
+    .crumbs{
+      display:flex; flex-direction:column; gap: 2px;
+      min-width: 0;
+    }
+    .crumbs .title{
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+    }
+    .crumbs .sub{
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .top-actions{
+      display:flex; align-items:center; gap: 10px;
+    }
+    .search{
+      display:flex; align-items:center; gap: 8px;
+      border: 1px solid var(--border);
+      background: var(--panel-2);
+      border-radius: 12px;
+      padding: 10px 12px;
+      min-width: min(440px, 44vw);
+    }
+    .search input{
+      border: none;
+      outline: none;
+      background: transparent;
+      color: var(--text);
+      width: 100%;
+      font-size: 13px;
+    }
+    .search .hint{
+      font-size: 11px;
+      color: var(--muted-2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 3px 8px;
+      background: rgba(255,255,255,0.04);
+      white-space: nowrap;
+    }
+
+    /* Pages */
+    .page{ display:none; margin-top: 14px; }
+    .page.active{ display:block; }
+
+    .page-header{
+      display:flex;
+      justify-content: space-between;
+      align-items:flex-start;
+      gap: 12px;
+      padding: 6px 2px 12px;
+    }
+    .page-header h2{
+      margin: 0;
+      font-size: 18px;
+      letter-spacing: 0.01em;
+    }
+    .page-header p{
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    /* Components */
+    .grid{
+      display:grid;
+      gap: var(--grid-gap);
+    }
+    .grid.cols-12{ grid-template-columns: repeat(12, 1fr); }
+    .col-12{ grid-column: span 12; }
+    .col-8{ grid-column: span 8; }
+    .col-6{ grid-column: span 6; }
+    .col-4{ grid-column: span 4; }
+    .col-3{ grid-column: span 3; }
+
+    @media (max-width: 1100px){
+      .app{ grid-template-columns: 1fr; }
+      .sidebar{
+        position: relative; height: auto;
+        border-right: none;
+        border-bottom: 1px solid var(--line);
+      }
+      .sidebar-footer{ position: relative; left: 0; right: 0; bottom: 0; margin-top: 12px; }
+      .search{ display:none; }
+      .col-8,.col-6,.col-4,.col-3{ grid-column: span 12; }
+    }
+
+    .card{
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--border);
+      background: var(--panel);
+      box-shadow: var(--shadow-soft);
+      overflow: hidden;
+    }
+    .card .card-head{
+      padding: 14px 14px 10px;
+      display:flex;
+      align-items:flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,0.04), transparent);
+    }
+    .card .card-head h3{
+      margin: 0;
+      font-size: 13px;
+      letter-spacing: 0.02em;
+      text-transform: none;
+    }
+    .card .card-head .meta{
+      margin-top: 4px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .card .card-body{ padding: 14px; }
+
+    .btn{
+      border: 1px solid var(--border);
+      background: var(--panel-2);
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      user-select:none;
+      transition: transform .06s ease, background .12s ease, border-color .12s ease;
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+    }
+    .btn:hover{ background: var(--panel-3); border-color: rgba(255,255,255,0.18); }
+    .btn:active{ transform: translateY(1px); }
+    .btn:focus{ outline: none; box-shadow: var(--focus); }
+
+    .btn.primary{
+      background: linear-gradient(180deg, rgba(124,92,255,0.92), rgba(124,92,255,0.70));
+      border-color: rgba(124,92,255,0.55);
+    }
+    .btn.primary:hover{ background: linear-gradient(180deg, rgba(124,92,255,0.98), rgba(124,92,255,0.75)); }
+    .btn.ghost{
+      background: transparent;
+    }
+    .btn.danger{
+      background: linear-gradient(180deg, rgba(255,91,110,0.90), rgba(255,91,110,0.70));
+      border-color: rgba(255,91,110,0.55);
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--panel-2);
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .kpis{
+      display:grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--grid-gap);
+    }
+    @media (max-width: 1100px){
+      .kpis{ grid-template-columns: 1fr; }
+    }
+    .kpi{
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--border);
+      background: var(--panel);
+      box-shadow: var(--shadow-soft);
+      padding: 14px;
+      position: relative;
+      overflow: hidden;
+    }
+    .kpi:before{
+      content:"";
+      position:absolute;
+      inset: -120px -80px auto auto;
+      width: 220px;
+      height: 220px;
+      background: radial-gradient(circle at 30% 30%, rgba(124,92,255,0.25), transparent 60%);
+      transform: rotate(15deg);
+      pointer-events:none;
+    }
+    .kpi .label{
+      font-size: 12px;
+      color: var(--muted);
+      display:flex; align-items:center; justify-content:space-between;
+      gap: 10px;
+    }
+    .kpi .value{
+      margin-top: 10px;
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+    .kpi .delta{
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--muted);
+      display:flex; align-items:center; gap: 8px;
+    }
+    .delta .tag{
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.05);
+      color: var(--muted);
+    }
+    .tag.up{ color: rgba(24,194,156,0.95); border-color: rgba(24,194,156,0.35); background: rgba(24,194,156,0.10); }
+    .tag.down{ color: rgba(255,176,32,0.95); border-color: rgba(255,176,32,0.35); background: rgba(255,176,32,0.10); }
+    .tag.neutral{ color: rgba(47,155,255,0.95); border-color: rgba(47,155,255,0.35); background: rgba(47,155,255,0.10); }
+
+    .form-row{
+      display:grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 10px;
+    }
+    .field{ grid-column: span 3; }
+    .field.span-4{ grid-column: span 4; }
+    .field.span-6{ grid-column: span 6; }
+    .field.span-12{ grid-column: span 12; }
+
+    @media (max-width: 1100px){
+      .field, .field.span-4, .field.span-6{ grid-column: span 12; }
+    }
+
+    label{
+      display:block;
+      font-size: 12px;
+      color: var(--muted);
+      margin: 0 0 6px;
+    }
+    input, select{
+      width: 100%;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--panel-2);
+      color: var(--text);
+      padding: 10px 12px;
+      font-size: 13px;
+      outline: none;
+    }
+    input:focus, select:focus{ box-shadow: var(--focus); border-color: rgba(124,92,255,0.40); }
+
+    .split-actions{
+      display:flex; gap: 10px; flex-wrap: wrap;
+      align-items:center; justify-content:flex-end;
+    }
+
+    .muted{ color: var(--muted); }
+    .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+
+    /* Tabulator theming */
+    .tabulator{
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: transparent;
+      overflow: hidden;
+    }
+    .tabulator .tabulator-header{
+      background: rgba(255,255,255,0.04);
+      border-bottom: 1px solid var(--line);
+      color: var(--text);
+    }
+    .tabulator .tabulator-header .tabulator-col{
+      background: transparent;
+      border-right: 1px solid rgba(255,255,255,0.06);
+    }
+    .tabulator .tabulator-row{
+      background: rgba(255,255,255,0.02);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      color: var(--text);
+    }
+    .tabulator .tabulator-row:hover{
+      background: rgba(124,92,255,0.08);
+    }
+    .tabulator .tabulator-footer{
+      background: rgba(255,255,255,0.03);
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+    }
+    .tabulator .tabulator-page{
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text);
+      border-radius: 10px;
+      padding: 6px 10px;
+    }
+
+    /* Login overlay */
+    .login{
+      position: fixed;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      background:
+        radial-gradient(1000px 500px at 20% 10%, rgba(124,92,255,0.22), transparent 60%),
+        radial-gradient(900px 520px at 80% 20%, rgba(47,155,255,0.18), transparent 55%),
+        var(--bg);
+      z-index: 999;
+    }
+    .login-card{
+      width: min(480px, 100%);
+      border-radius: 22px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.06);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+      overflow: hidden;
+    }
+    .login-head{
+      padding: 18px 18px 14px;
+      border-bottom: 1px solid var(--line);
+      display:flex;
+      align-items:flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .login-head h2{ margin:0; font-size: 16px; letter-spacing:0.01em; }
+    .login-head p{ margin:6px 0 0; color: var(--muted); font-size: 13px; }
+    .login-body{ padding: 18px; }
+    .login-foot{
+      padding: 14px 18px;
+      border-top: 1px solid var(--line);
+      display:flex;
+      justify-content: space-between;
+      align-items:center;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .toast{
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      width: min(420px, calc(100% - 36px));
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: rgba(0,0,0,0.40);
+      backdrop-filter: blur(12px);
+      box-shadow: var(--shadow-soft);
+      padding: 12px 12px;
+      display:none;
+      z-index: 1000;
+    }
+    .toast.show{ display:block; }
+    .toast .t-title{ font-weight: 800; font-size: 13px; }
+    .toast .t-msg{ color: var(--muted); font-size: 12px; margin-top: 4px; }
+
+    /* Details/Docs */
+    details{
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.03);
+      padding: 12px 12px;
+    }
+    details summary{
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 13px;
+      outline: none;
+    }
+    details p, details li{
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+    .hr{
+      height: 1px;
+      background: var(--line);
+      margin: 12px 0;
+    }
+
+    /* Small helpers */
+    .row{
+      display:flex; align-items:center; justify-content:space-between; gap: 10px; flex-wrap: wrap;
+    }
+    .badges{ display:flex; align-items:center; gap: 8px; flex-wrap: wrap; }
+    .right{ margin-left: auto; }
+  </style>
+</head>
+
+<body data-theme="dark">
+  <!-- LOGIN (demonstração) -->
+  <section class="login" id="login">
+    <div class="login-card" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
+      <div class="login-head">
+        <div>
+          <h2 id="loginTitle">FalconsStock • Acesso Administrativo Seguro</h2>
+          <p>Entre com e-mail corporativo e senha para acessar o painel.</p>
+        </div>
+        <span class="chip">v4.0.2 • Server Secure</span>
+      </div>
+      <div class="login-body">
+        <div class="form-row">
+          <div class="field span-12">
+            <label for="email">E-mail Corporativo</label>
+            <input id="email" type="email" placeholder="admin@empresa.com" autocomplete="username" />
+          </div>
+          <div class="field span-12">
+            <label for="senha">Senha de Acesso</label>
+            <input id="senha" type="password" placeholder="••••••••" autocomplete="current-password" />
+          </div>
+        </div>
+        <div style="margin-top: 14px; display:flex; gap: 10px; align-items:center; justify-content: space-between; flex-wrap: wrap;">
+          <button class="btn primary" id="btnLogin">Acessar Painel</button>
+          <span class="muted" style="font-size:12px;">Atalho: <span class="mono">Enter</span></span>
+        </div>
+
+        <div class="hr"></div>
+        <details>
+          <summary>Credenciais de demonstração</summary>
+          <p>Use qualquer e-mail e a senha <span class="mono">admin</span> para entrar (modo demo).</p>
+        </details>
+      </div>
+      <div class="login-foot">
+        <span>FalconsStock • Operação & Inteligência</span>
+        <span class="muted">Build 2024</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast" role="status" aria-live="polite">
+    <div class="t-title" id="toastTitle"></div>
+    <div class="t-msg" id="toastMsg"></div>
+  </div>
+
+  <!-- APP -->
+  <div class="app" id="app" style="display:none;">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-left">
+          <div class="logo" aria-hidden="true"></div>
+          <div>
+            <h1>FalconsStock</h1>
+            <div class="build">Operacional • Profissional</div>
+          </div>
+        </div>
+        <span class="chip" id="dataBadge">Dados: Demo</span>
+      </div>
+
+      <nav class="nav" aria-label="Navegação principal">
+        <div class="nav-group">
+          <div class="nav-title">Visão Geral</div>
+          <a href="#" class="active" data-page="visao">
+            <span class="ico">📌</span>
+            <span>Visão Geral</span>
+          </a>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-title">Operacional</div>
+          <a href="#" data-page="pdv"><span class="ico">💳</span><span>PDV / Caixa</span></a>
+          <a href="#" data-page="produtos"><span class="ico">📦</span><span>Produtos</span></a>
+          <a href="#" data-page="mov"><span class="ico">📈</span><span>Movimentações</span></a>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-title">Análise</div>
+          <a href="#" data-page="analises"><span class="ico">🧠</span><span>Análises</span></a>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-title">Sistema</div>
+          <a href="#" data-page="config"><span class="ico">⚙️</span><span>Configurações</span></a>
+          <a href="#" id="btnLogout"><span class="ico">🚪</span><span>Sair</span></a>
+        </div>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-line">
+          <div class="avatar" id="avatar">AD</div>
+          <div class="user-meta">
+            <strong id="userName">Administrador</strong>
+            <span id="userOrg">Loja Central • Loja 01</span>
+          </div>
+          <button class="icon-btn" id="btnTheme" title="Alternar tema" aria-label="Alternar tema">◐</button>
+        </div>
+      </div>
+    </aside>
+
+    <main class="content">
+      <header class="topbar">
+        <div class="crumbs">
+          <div class="title" id="topTitle">Visão Geral</div>
+          <div class="sub" id="topSub">Resumo operacional com indicadores-chave e últimas atividades.</div>
+        </div>
+
+        <div class="top-actions">
+          <div class="search" role="search">
+            <span aria-hidden="true">⌕</span>
+            <input id="globalSearch" placeholder="Buscar em vendas, produtos e movimentações…" />
+            <span class="hint">Ctrl K</span>
+          </div>
+          <button class="icon-btn" id="btnHelp" title="Atalhos e ajuda" aria-label="Atalhos e ajuda">?</button>
+        </div>
+      </header>
+
+      <!-- PAGE: VISÃO -->
+      <section class="page active" id="page-visao">
+        <div class="page-header">
+          <div>
+            <h2>Visão Geral</h2>
+            <p>Indicadores operacionais e contexto rápido para tomada de decisão (sem “cara de dashboard infantil”).</p>
+          </div>
+          <div class="badges">
+            <span class="pill">Status: <strong>Online</strong></span>
+            <span class="pill">Servidor: <strong>Secure</strong></span>
+          </div>
+        </div>
+
+        <div class="kpis" aria-label="Indicadores">
+          <div class="kpi">
+            <div class="label">
+              <span>Vendas (Hoje)</span>
+              <span class="pill">💰 Receita</span>
+            </div>
+            <div class="value" id="kpiHojeReceita">—</div>
+            <div class="delta"><span class="tag up" id="kpiHojeReceitaDeltaTag">—</span><span id="kpiHojeReceitaDelta">vs ontem</span></div>
+          </div>
+
+          <div class="kpi">
+            <div class="label">
+              <span>Produtos Vendidos (Hoje)</span>
+              <span class="pill">📦 Itens</span>
+            </div>
+            <div class="value" id="kpiHojeItens">—</div>
+            <div class="delta"><span class="tag up" id="kpiHojeItensDeltaTag">—</span><span id="kpiHojeItensDelta">vs ontem</span></div>
+          </div>
+
+          <div class="kpi">
+            <div class="label">
+              <span>Ticket Médio (Hoje)</span>
+              <span class="pill">🎯 Eficiência</span>
+            </div>
+            <div class="value" id="kpiHojeTicket">—</div>
+            <div class="delta"><span class="tag down" id="kpiHojeTicketDeltaTag">—</span><span id="kpiHojeTicketDelta">vs ontem</span></div>
+          </div>
+
+          <div class="kpi">
+            <div class="label">
+              <span>Estoque Baixo</span>
+              <span class="pill">⚠️ Atenção</span>
+            </div>
+            <div class="value" id="kpiEstoqueBaixo">—</div>
+            <div class="delta"><span class="tag neutral">Monitoramento</span><span class="muted">Sugestão: revisar reposição</span></div>
+          </div>
+        </div>
+
+        <div class="grid cols-12" style="margin-top: 14px;">
+          <div class="card col-8">
+            <div class="card-head">
+              <div>
+                <h3>Últimas Vendas</h3>
+                <div class="meta">Visualização rápida — para análise profunda, use a aba <strong>Análises</strong>.</div>
+              </div>
+              <div class="split-actions">
+                <button class="btn" id="btnExportUltimas">📥 Exportar</button>
+                <button class="btn primary" id="btnNovaVenda1">➕ Nova Venda</button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div id="tableUltimas"></div>
+            </div>
+          </div>
+
+          <div class="card col-4">
+            <div class="card-head">
+              <div>
+                <h3>Alertas Operacionais</h3>
+                <div class="meta">Pontos de atenção para ação imediata.</div>
+              </div>
+              <span class="pill">Prioridade</span>
+            </div>
+            <div class="card-body">
+              <div class="grid" style="gap: 10px;">
+                <div class="card" style="box-shadow:none;">
+                  <div class="card-body" style="padding: 12px;">
+                    <div class="row">
+                      <strong>Ruptura / Estoque baixo</strong>
+                      <span class="pill">⚠️</span>
+                    </div>
+                    <p class="muted" style="margin: 8px 0 0;">Produtos com estoque abaixo do mínimo configurado.</p>
+                  </div>
+                </div>
+
+                <div class="card" style="box-shadow:none;">
+                  <div class="card-body" style="padding: 12px;">
+                    <div class="row">
+                      <strong>Vendas pendentes</strong>
+                      <span class="pill">⏳</span>
+                    </div>
+                    <p class="muted" style="margin: 8px 0 0;">Transações aguardando confirmação ou fechamento.</p>
+                  </div>
+                </div>
+
+                <div class="card" style="box-shadow:none;">
+                  <div class="card-body" style="padding: 12px;">
+                    <div class="row">
+                      <strong>Auditoria</strong>
+                      <span class="pill">🔍</span>
+                    </div>
+                    <p class="muted" style="margin: 8px 0 0;">Recomendado: exportar relatórios e conciliar pagamentos.</p>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PAGE: PDV -->
+      <section class="page" id="page-pdv">
+        <div class="page-header">
+          <div>
+            <h2>PDV / Caixa</h2>
+            <p>Fluxo operacional de venda (modo demonstrativo). Para relatórios e métricas, use a aba <strong>Análises</strong>.</p>
+          </div>
+          <div class="split-actions">
+            <button class="btn primary" id="btnNovaVenda2">➕ Nova Venda</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <h3>Sistema PDV</h3>
+              <div class="meta">Clique em “Nova Venda” para iniciar uma transação.</div>
+            </div>
+            <span class="pill">💳 Caixa</span>
+          </div>
+          <div class="card-body">
+            <p class="muted" style="margin:0;">Este arquivo é um front-end único. Em produção, a finalização da venda deve chamar sua API e registrar eventos de auditoria.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- PAGE: PRODUTOS -->
+      <section class="page" id="page-produtos">
+        <div class="page-header">
+          <div>
+            <h2>Produtos</h2>
+            <p>Catálogo com visão operacional. (Inclui coluna de imagem para um layout mais profissional.)</p>
+          </div>
+          <div class="split-actions">
+            <button class="btn" id="btnImportarProdutos">📥 Importar</button>
+            <button class="btn primary" id="btnNovoProduto">➕ Novo Produto</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <h3>Catálogo de Produtos</h3>
+              <div class="meta">Ordene, filtre e exporte (tabela avançada).</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div id="tableProdutos"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PAGE: MOV -->
+      <section class="page" id="page-mov">
+        <div class="page-header">
+          <div>
+            <h2>Movimentações</h2>
+            <p>Entradas, saídas e ajustes de estoque com rastreabilidade.</p>
+          </div>
+          <div class="split-actions">
+            <button class="btn" id="btnRelatorioMov">📊 Relatório</button>
+            <button class="btn primary" id="btnNovaMov">➕ Nova Movimentação</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <h3>Movimentações de Estoque</h3>
+              <div class="meta">Registros recentes (operações).</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div id="tableMov"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PAGE: ANÁLISES -->
+      <section class="page" id="page-analises">
+        <div class="page-header">
+          <div>
+            <h2>Análises</h2>
+            <p>Relatórios dinâmicos, gráficos interativos, drill‑down e exportação — focado em uso profissional.</p>
+          </div>
+          <div class="split-actions">
+            <button class="btn" id="btnSalvarRelatorio">💾 Salvar relatório</button>
+            <button class="btn" id="btnLimparRelatorio">🧹 Limpar</button>
+            <button class="btn primary" id="btnAplicarAnalise">Aplicar</button>
+          </div>
+        </div>
+
+        <div class="grid cols-12">
+          <!-- filtros -->
+          <div class="card col-12">
+            <div class="card-head">
+              <div>
+                <h3>Construtor de Relatório</h3>
+                <div class="meta">Defina período, dimensões e métricas. Salve configurações para reutilizar.</div>
+              </div>
+              <div class="badges">
+                <span class="pill">Atalho: <span class="mono">A</span> (abrir Análises)</span>
+                <span class="pill">Drill‑down: clique no gráfico</span>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="form-row">
+                <div class="field">
+                  <label for="aInicio">Início</label>
+                  <input type="date" id="aInicio" />
+                </div>
+                <div class="field">
+                  <label for="aFim">Fim</label>
+                  <input type="date" id="aFim" />
+                </div>
+                <div class="field">
+                  <label for="aStatus">Status</label>
+                  <select id="aStatus">
+                    <option value="all">Todos</option>
+                    <option value="Concluída">Concluída</option>
+                    <option value="Pendente">Pendente</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="aGroupBy">Agrupar por</label>
+                  <select id="aGroupBy">
+                    <option value="day">Dia</option>
+                    <option value="week">Semana</option>
+                    <option value="month">Mês</option>
+                  </select>
+                </div>
+
+                <div class="field span-4">
+                  <label for="aDimension">Dimensão (distribuição)</label>
+                  <select id="aDimension">
+                    <option value="category">Categoria</option>
+                    <option value="product">Produto</option>
+                    <option value="payment">Pagamento</option>
+                  </select>
+                </div>
+
+                <div class="field span-4">
+                  <label for="aMetric">Métrica (série temporal)</label>
+                  <select id="aMetric">
+                    <option value="value">Faturamento (R$)</option>
+                    <option value="items">Itens</option>
+                    <option value="orders">Nº de vendas</option>
+                  </select>
+                </div>
+
+                <div class="field span-4">
+                  <label for="aCompare">Comparação</label>
+                  <select id="aCompare">
+                    <option value="prev">Comparar com período anterior</option>
+                    <option value="none">Sem comparação</option>
+                  </select>
+                </div>
+
+                <div class="field span-6">
+                  <label for="aReportSelect">Relatórios salvos</label>
+                  <select id="aReportSelect"></select>
+                </div>
+
+                <div class="field span-6">
+                  <label>&nbsp;</label>
+                  <div class="split-actions" style="justify-content:flex-start;">
+                    <button class="btn" id="btnCarregarRelatorio">📂 Carregar</button>
+                    <button class="btn danger" id="btnExcluirRelatorio">🗑️ Excluir</button>
+                    <button class="btn" id="btnExportCSV">📥 Exportar CSV</button>
+                    <button class="btn" id="btnExportJSON">🧾 Exportar JSON</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="hr"></div>
+
+              <div class="grid" style="grid-template-columns: 1.2fr 0.8fr; gap: 12px;">
+                <div class="muted" style="font-size: 12px;">
+                  <strong style="color: var(--text);">Dica profissional:</strong> use “Agrupar por Semana” para reduzir ruído e
+                  “Dimensão = Categoria” para identificar concentração de receita; clique no gráfico para filtrar a tabela.
+                </div>
+                <div class="badges" style="justify-content:flex-end;">
+                  <span class="pill" id="aResultPill">—</span>
+                  <span class="pill" id="aComparePill">Comparação: período anterior</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- KPIs -->
+          <div class="col-12">
+            <div class="kpis">
+              <div class="kpi">
+                <div class="label">
+                  <span>Faturamento</span>
+                  <span class="pill">R$</span>
+                </div>
+                <div class="value" id="aKpiFat">—</div>
+                <div class="delta"><span class="tag" id="aKpiFatTag">—</span><span id="aKpiFatDelta">—</span></div>
+              </div>
+              <div class="kpi">
+                <div class="label">
+                  <span>Nº de Vendas</span>
+                  <span class="pill">Pedidos</span>
+                </div>
+                <div class="value" id="aKpiOrders">—</div>
+                <div class="delta"><span class="tag" id="aKpiOrdersTag">—</span><span id="aKpiOrdersDelta">—</span></div>
+              </div>
+              <div class="kpi">
+                <div class="label">
+                  <span>Ticket Médio</span>
+                  <span class="pill">Médio</span>
+                </div>
+                <div class="value" id="aKpiTicket">—</div>
+                <div class="delta"><span class="tag" id="aKpiTicketTag">—</span><span id="aKpiTicketDelta">—</span></div>
+              </div>
+              <div class="kpi">
+                <div class="label">
+                  <span>% Pendentes</span>
+                  <span class="pill">Risco</span>
+                </div>
+                <div class="value" id="aKpiPending">—</div>
+                <div class="delta"><span class="tag neutral">Qualidade</span><span class="muted">Acompanhar fechamento</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- charts -->
+          <div class="card col-8">
+            <div class="card-head">
+              <div>
+                <h3>Série temporal</h3>
+                <div class="meta">Interativo • clique para drill‑down (filtra a tabela pelo agrupamento).</div>
+              </div>
+              <span class="pill" id="aSeriesLegend">Métrica: Faturamento</span>
+            </div>
+            <div class="card-body">
+              <canvas id="chartSeries" height="120"></canvas>
+            </div>
+          </div>
+
+          <div class="card col-4">
+            <div class="card-head">
+              <div>
+                <h3>Distribuição</h3>
+                <div class="meta">Pareto rápido por dimensão selecionada.</div>
+              </div>
+              <span class="pill" id="aDistLegend">Dimensão: Categoria</span>
+            </div>
+            <div class="card-body">
+              <canvas id="chartDist" height="170"></canvas>
+            </div>
+          </div>
+
+          <!-- drill table -->
+          <div class="card col-12">
+            <div class="card-head">
+              <div>
+                <h3>Detalhamento (drill‑down)</h3>
+                <div class="meta">Tabela avançada: ordenar, filtrar, ocultar colunas e exportar.</div>
+              </div>
+              <div class="split-actions">
+                <button class="btn" id="btnClearDrill">🧼 Limpar drill‑down</button>
+                <span class="pill" id="drillInfo">—</span>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="form-row" style="margin-bottom: 10px;">
+                <div class="field span-6">
+                  <label for="aTableSearch">Buscar na tabela</label>
+                  <input id="aTableSearch" placeholder="Ex.: João, PIX, Periféricos, #VND-010…" />
+                </div>
+                <div class="field span-6">
+                  <label for="aTopN">Top N (distribuição)</label>
+                  <select id="aTopN">
+                    <option value="8">Top 8</option>
+                    <option value="12">Top 12</option>
+                    <option value="20">Top 20</option>
+                    <option value="9999">Todos</option>
+                  </select>
+                </div>
+              </div>
+              <div id="tableDrill"></div>
+            </div>
+          </div>
+
+          <!-- integrações -->
+          <div class="card col-12">
+            <div class="card-head">
+              <div>
+                <h3>Integrações (Dados)</h3>
+                <div class="meta">Modo demo incluso. Você pode importar CSV ou apontar para uma API (CORS necessário).</div>
+              </div>
+              <span class="pill">Conectores</span>
+            </div>
+            <div class="card-body">
+              <div class="form-row">
+                <div class="field span-4">
+                  <label for="dataSource">Fonte de dados</label>
+                  <select id="dataSource">
+                    <option value="demo">Demo (interno)</option>
+                    <option value="csv">Importar CSV (vendas)</option>
+                    <option value="api">Conectar API (vendas)</option>
+                  </select>
+                </div>
+                <div class="field span-4" id="csvField" style="display:none;">
+                  <label for="csvFile">Arquivo CSV</label>
+                  <input id="csvFile" type="file" accept=".csv,text/csv" />
+                </div>
+                <div class="field span-4" id="apiField" style="display:none;">
+                  <label for="apiUrl">URL da API (GET JSON)</label>
+                  <input id="apiUrl" placeholder="https://seu-servidor/api/sales" />
+                </div>
+
+                <div class="field span-12">
+                  <label>&nbsp;</label>
+                  <div class="split-actions" style="justify-content:flex-start;">
+                    <button class="btn primary" id="btnLoadData">Carregar dados</button>
+                    <button class="btn" id="btnResetData">Voltar para Demo</button>
+                    <span class="muted" style="font-size:12px;">
+                      CSV esperado: <span class="mono">id,datetime,customer,items,value,status,payment,category,product</span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="hr"></div>
+
+              <details>
+                <summary>Documentação rápida (novas funcionalidades)</summary>
+                <p><strong style="color:var(--text);">1) Construtor de Relatórios</strong></p>
+                <ul>
+                  <li><strong>Início/Fim</strong>: define o período analisado.</li>
+                  <li><strong>Status</strong>: filtra transações concluídas/pendentes.</li>
+                  <li><strong>Agrupar por</strong>: dia/semana/mês (impacta série temporal e drill‑down).</li>
+                  <li><strong>Dimensão</strong>: define a distribuição (ex.: Categoria, Produto, Pagamento).</li>
+                  <li><strong>Métrica</strong>: define a série temporal (faturamento/itens/nº vendas).</li>
+                </ul>
+
+                <p><strong style="color:var(--text);">2) Gráficos Interativos</strong></p>
+                <ul>
+                  <li><strong>Drill‑down</strong>: clique em um ponto/segmento para filtrar a tabela.</li>
+                  <li><strong>Comparação</strong>: exibe variação vs período anterior (mesmo tamanho).</li>
+                </ul>
+
+                <p><strong style="color:var(--text);">3) Tabela Avançada</strong></p>
+                <ul>
+                  <li>Ordenação por colunas, paginação, colunas movíveis e busca.</li>
+                  <li>Exportação em <strong>CSV</strong> (botão) e JSON (botão).</li>
+                </ul>
+
+                <p><strong style="color:var(--text);">4) Integrações</strong></p>
+                <ul>
+                  <li><strong>CSV</strong>: importa vendas para análise rápida.</li>
+                  <li><strong>API</strong>: conecta em endpoint JSON (requer CORS liberado no servidor).</li>
+                </ul>
+              </details>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PAGE: CONFIG -->
+      <section class="page" id="page-config">
+        <div class="page-header">
+          <div>
+            <h2>Configurações</h2>
+            <p>Preferências do sistema (modo demonstrativo).</p>
+          </div>
+          <div class="split-actions">
+            <button class="btn primary" id="btnSalvarConfig">💾 Salvar Configurações</button>
+          </div>
+        </div>
+
+        <div class="grid cols-12">
+          <div class="card col-6">
+            <div class="card-head">
+              <div>
+                <h3>Informações da Empresa</h3>
+                <div class="meta">Usado em relatórios e exportações.</div>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="form-row">
+                <div class="field span-12">
+                  <label for="empresa">Nome da Empresa</label>
+                  <input id="empresa" placeholder="Falcons Comércio LTDA" />
+                </div>
+                <div class="field span-12">
+                  <label for="cnpj">CNPJ</label>
+                  <input id="cnpj" placeholder="00.000.000/0001-00" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card col-6">
+            <div class="card-head">
+              <div>
+                <h3>Preferências</h3>
+                <div class="meta">Moeda e comportamento.</div>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="form-row">
+                <div class="field span-12">
+                  <label for="moeda">Moeda padrão</label>
+                  <select id="moeda">
+                    <option value="BRL" selected>BRL — Real Brasileiro</option>
+                    <option value="USD">USD — Dólar Americano</option>
+                    <option value="EUR">EUR — Euro</option>
+                  </select>
+                </div>
+                <div class="field span-12">
+                  <label for="timezone">Fuso horário (exibição)</label>
+                  <select id="timezone">
+                    <option value="America/Sao_Paulo" selected>America/Sao_Paulo</option>
+                    <option value="UTC">UTC</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="hr"></div>
+              <p class="muted" style="margin:0;">Boas práticas: auditar alterações e controlar permissões por perfil (RBAC) no back-end.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- HELP modal (simple) -->
+      <section class="card" id="helpPanel" style="display:none; margin-top:14px;">
+        <div class="card-head">
+          <div>
+            <h3>Ajuda & Atalhos</h3>
+            <div class="meta">Produtividade para usuário profissional.</div>
+          </div>
+          <button class="btn ghost" id="btnCloseHelp">Fechar</button>
+        </div>
+        <div class="card-body">
+          <ul>
+            <li><span class="mono">Ctrl K</span>: focar busca global</li>
+            <li><span class="mono">A</span>: abrir Análises</li>
+            <li><span class="mono">V</span>: abrir Visão Geral</li>
+            <li><span class="mono">Esc</span>: fechar ajuda</li>
+          </ul>
+          <p class="muted">Dica: no gráfico da aba Análises, clique em pontos/segmentos para filtrar a tabela (drill‑down).</p>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Chart.js + Tabulator -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://unpkg.com/tabulator-tables@6.3.0/dist/js/tabulator.min.js"></script>
+
+  <script>
+    /*********************
+     * UTIL
+     *********************/
+    const $ = (sel) => document.querySelector(sel);
+    const $$ = (sel) => [...document.querySelectorAll(sel)];
+
+    const toastEl = $("#toast");
+    function toast(title, msg){
+      $("#toastTitle").textContent = title;
+      $("#toastMsg").textContent = msg;
+      toastEl.classList.add("show");
+      clearTimeout(toastEl._t);
+      toastEl._t = setTimeout(()=>toastEl.classList.remove("show"), 3600);
+    }
+
+    function setTheme(theme){
+      document.body.setAttribute("data-theme", theme);
+      localStorage.setItem("fs_theme_v1", theme);
+    }
+    function getTheme(){
+      return localStorage.getItem("fs_theme_v1") || "dark";
+    }
+
+    const tz = () => $("#timezone")?.value || "America/Sao_Paulo";
+    const brl = (n) => new Intl.NumberFormat("pt-BR",{style:"currency",currency:"BRL"}).format(Number(n||0));
+    const pct = (n) => (n === null || Number.isNaN(n)) ? "—" : `${(n>=0?"+":"")}${n.toFixed(1)}%`;
+
+    function clamp(n,min,max){ return Math.max(min, Math.min(max,n)); }
+
+    function dayKey(d){
+      const x = new Date(d);
+      const yyyy = x.getFullYear();
+      const mm = String(x.getMonth()+1).padStart(2,"0");
+      const dd = String(x.getDate()).padStart(2,"0");
+      return `${yyyy}-${mm}-${dd}`;
+    }
+    function isoWeekKey(date){
+      const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+      const dayNum = d.getUTCDay() || 7;
+      d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+      const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+      const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+      return `${d.getUTCFullYear()}-W${String(weekNo).padStart(2,"0")}`;
+    }
+    function monthKey(d){
+      const x = new Date(d);
+      const yyyy = x.getFullYear();
+      const mm = String(x.getMonth()+1).padStart(2,"0");
+      return `${yyyy}-${mm}`;
+    }
+    function groupKey(dateStr, mode){
+      const d = new Date(dateStr);
+      if (mode === "day") return dayKey(d);
+      if (mode === "week") return isoWeekKey(d);
+      return monthKey(d);
+    }
+
+    function inRange(dt, start, end){
+      const t = new Date(dt).getTime();
+      const s = start.getTime();
+      const e = end.getTime() + (24*60*60*1000-1);
+      return t >= s && t <= e;
+    }
+
+    function deltaPct(cur, prev){
+      if (!prev) return null;
+      return ((cur - prev) / prev) * 100;
+    }
+
+    function tagClass(p){
+      if (p === null) return "neutral";
+      if (p > 0.05) return "up";
+      if (p < -0.05) return "down";
+      return "neutral";
+    }
+
+    function setTag(el, p){
+      el.classList.remove("up","down","neutral");
+      el.classList.add(tagClass(p));
+      el.textContent = p === null ? "—" : pct(p);
+    }
+
+    /*********************
+     * DATA (Demo)
+     *********************/
+    const App = {
+      dataMode: "demo",
+      sales: [],
+      products: [],
+      movements: [],
+      reports: [],
+      tables: {},
+      charts: {},
+      drill: { active:false, key:null, mode:null, via:null },
+    };
+
+    function seededRand(seed){
+      let t = seed >>> 0;
+      return function(){
+        t += 0x6D2B79F5;
+        let r = Math.imul(t ^ (t >>> 15), 1 | t);
+        r ^= r + Math.imul(r ^ (r >>> 7), 61 | r);
+        return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+
+    function loadDemoData(){
+      // Produtos (com imagem placeholder)
+      App.products = [
+        { code:"#PRD-001", name:"Notebook Dell Inspiron", category:"Informática", stock:15, price:3299.00, status:"Ativo", image:"https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=200&q=60" },
+        { code:"#PRD-002", name:"Mouse Logitech MX Master", category:"Periféricos", stock:8, price:429.90, status:"Ativo", image:"https://images.unsplash.com/photo-1527814050087-3793815479db?auto=format&fit=crop&w=200&q=60" },
+        { code:"#PRD-003", name:"Teclado Mecânico RGB", category:"Periféricos", stock:3, price:589.00, status:"Estoque Baixo", image:"https://images.unsplash.com/photo-1587829741301-dc798b83add3?auto=format&fit=crop&w=200&q=60" },
+        { code:"#PRD-004", name:"Headset Gamer", category:"Acessórios", stock:6, price:319.00, status:"Ativo", image:"https://images.unsplash.com/photo-1599669454699-248893623440?auto=format&fit=crop&w=200&q=60" },
+        { code:"#PRD-005", name:"SSD NVMe 1TB", category:"Informática", stock:4, price:499.00, status:"Estoque Baixo", image:"https://images.unsplash.com/photo-1625842268584-8f3296236761?auto=format&fit=crop&w=200&q=60" }
+      ];
+
+      // Movimentações
+      App.movements = [
+        { id:"#MOV-001", datetime:"2025-12-22T16:30:00", type:"Entrada", product:"Notebook Dell Inspiron", qty:+10, owner:"Admin" },
+        { id:"#MOV-002", datetime:"2025-12-22T15:45:00", type:"Saída", product:"Mouse Logitech MX Master", qty:-3, owner:"Vendedor 01" },
+      ];
+
+      // Vendas: gera 45 dias de amostra (com algumas do seu exemplo)
+      const base = new Date("2025-12-22T00:00:00");
+      const rnd = seededRand(20251222);
+
+      const customers = ["João Silva","Maria Santos","Pedro Costa","Carla Lima","Bruno Almeida","Carla Ribeiro","Diego Rocha","Fernanda Souza","Gustavo Dias","Helena Martins"];
+      const payments = ["Dinheiro","Cartão de Crédito","Cartão de Débito","PIX"];
+      const statusArr = ["Concluída","Concluída","Concluída","Pendente"]; // mais concluídas
+
+      const prodPool = App.products.map(p => ({...p}));
+
+      const sales = [];
+      let idCounter = 1;
+
+      // Inclui as 3 vendas do seu layout
+      sales.push(
+        { id:"#VND-001", datetime:"2025-12-22T17:15:00", customer:"João Silva", items:5, value:245.90, status:"Concluída", payment:"PIX", category:"Periféricos", product:"Mouse Logitech MX Master" },
+        { id:"#VND-002", datetime:"2025-12-22T17:08:00", customer:"Maria Santos", items:3, value:128.50, status:"Concluída", payment:"Cartão de Débito", category:"Acessórios", product:"Teclado Mecânico RGB" },
+        { id:"#VND-003", datetime:"2025-12-22T16:52:00", customer:"Pedro Costa", items:8, value:412.30, status:"Pendente", payment:"Cartão de Crédito", category:"Informática", product:"Notebook Dell Inspiron" },
+      );
+
+      // Completa com vendas geradas
+      for(let d=0; d<45; d++){
+        const day = new Date(base.getTime() - d*86400000);
+        const n = 6 + Math.floor(rnd()*10); // 6..15 vendas/dia
+        for(let i=0;i<n;i++){
+          const h = 9 + Math.floor(rnd()*12);
+          const m = Math.floor(rnd()*60);
+          const s = Math.floor(rnd()*60);
+          const dt = new Date(day);
+          dt.setHours(h,m,s,0);
+
+          const prod = prodPool[Math.floor(rnd()*prodPool.length)];
+          const items = 1 + Math.floor(rnd()*6);
+          const baseValue = prod.price * items;
+          const noise = 0.85 + rnd()*0.35;
+          const value = Math.round(baseValue * noise * 100)/100;
+
+          sales.push({
+            id: `#VND-${String(++idCounter).padStart(3,"0")}`,
+            datetime: dt.toISOString().slice(0,19),
+            customer: customers[Math.floor(rnd()*customers.length)],
+            items,
+            value,
+            status: statusArr[Math.floor(rnd()*statusArr.length)],
+            payment: payments[Math.floor(rnd()*payments.length)],
+            category: prod.category,
+            product: prod.name,
+          });
+        }
+      }
+
+      // Ordena desc
+      sales.sort((a,b)=> new Date(b.datetime) - new Date(a.datetime));
+      App.sales = sales;
+    }
+
+    /*********************
+     * TABLES
+     *********************/
+    function initTables(){
+      // Últimas vendas (visão geral)
+      App.tables.ultimas = new Tabulator("#tableUltimas", {
+        layout: "fitColumns",
+        height: "360px",
+        pagination: true,
+        paginationSize: 8,
+        movableColumns: true,
+        placeholder: "Sem vendas.",
+        columns: [
+          {title:"ID", field:"id", width:110},
+          {title:"Data/Hora", field:"datetime", minWidth:170, formatter:(c)=> new Date(c.getValue()).toLocaleString("pt-BR",{ timeZone: tz() })},
+          {title:"Cliente", field:"customer"},
+          {title:"Produtos", field:"items", hozAlign:"right", formatter:(c)=> `${c.getValue()} itens`},
+          {title:"Valor", field:"value", hozAlign:"right", formatter:(c)=> brl(c.getValue())},
+          {title:"Status", field:"status"},
+          {title:"Ações", field:"_actions", width:110, hozAlign:"center", formatter:()=> "✏️  🗑️", headerSort:false},
+        ]
+      });
+
+      // Produtos
+      App.tables.produtos = new Tabulator("#tableProdutos", {
+        layout:"fitColumns",
+        height:"520px",
+        pagination:true,
+        paginationSize:10,
+        movableColumns:true,
+        placeholder:"Sem produtos.",
+        columns:[
+          {title:"", field:"image", width:70, headerSort:false, formatter:(c)=>{
+            const url = c.getValue();
+            return `<img alt="" src="${url}" style="width:44px;height:44px;border-radius:12px;object-fit:cover;border:1px solid rgba(255,255,255,0.12);" />`;
+          }},
+          {title:"Código", field:"code", width:120},
+          {title:"Nome", field:"name", minWidth:200},
+          {title:"Categoria", field:"category", width:140},
+          {title:"Estoque", field:"stock", hozAlign:"right", width:110, formatter:(c)=> `${c.getValue()} un.`},
+          {title:"Preço", field:"price", hozAlign:"right", width:140, formatter:(c)=> brl(c.getValue())},
+          {title:"Status", field:"status", width:140},
+          {title:"Ações", field:"_actions", width:110, hozAlign:"center", formatter:()=> "✏️  🗑️", headerSort:false},
+        ]
+      });
+
+      // Movimentações
+      App.tables.mov = new Tabulator("#tableMov", {
+        layout:"fitColumns",
+        height:"420px",
+        pagination:true,
+        paginationSize:8,
+        movableColumns:true,
+        placeholder:"Sem movimentações.",
+        columns:[
+          {title:"ID", field:"id", width:110},
+          {title:"Data/Hora", field:"datetime", minWidth:180, formatter:(c)=> new Date(c.getValue()).toLocaleString("pt-BR",{ timeZone: tz() })},
+          {title:"Tipo", field:"type", width:120},
+          {title:"Produto", field:"product"},
+          {title:"Quantidade", field:"qty", hozAlign:"right", width:120, formatter:(c)=> `${c.getValue()>0?"+":""}${c.getValue()} un.`},
+          {title:"Responsável", field:"owner", width:140},
+          {title:"Ações", field:"_actions", width:110, hozAlign:"center", formatter:()=> "✏️  🗑️", headerSort:false},
+        ]
+      });
+
+      // Drill-down (Análises)
+      App.tables.drill = new Tabulator("#tableDrill", {
+        layout:"fitColumns",
+        height:"520px",
+        pagination:true,
+        paginationSize:10,
+        movableColumns:true,
+        placeholder:"Sem dados para os filtros selecionados.",
+        columns:[
+          {title:"ID", field:"id", width:110},
+          {title:"Data/Hora", field:"datetime", minWidth:175, formatter:(c)=> new Date(c.getValue()).toLocaleString("pt-BR",{ timeZone: tz() })},
+          {title:"Cliente", field:"customer", minWidth:160},
+          {title:"Produto", field:"product", minWidth:190},
+          {title:"Categoria", field:"category", width:140},
+          {title:"Pagamento", field:"payment", width:160},
+          {title:"Itens", field:"items", hozAlign:"right", width:90},
+          {title:"Valor", field:"value", hozAlign:"right", width:120, formatter:(c)=> brl(c.getValue())},
+          {title:"Status", field:"status", width:120},
+        ]
+      });
+    }
+
+    function refreshOperationalTables(){
+      App.tables.ultimas.setData(App.sales.slice(0, 40));
+      App.tables.produtos.setData(App.products);
+      App.tables.mov.setData(App.movements);
+    }
+
+    /*********************
+     * CHARTS (Análises)
+     *********************/
+    function chartColor(){
+      // usa cores que funcionam em dark/light
+      const isLight = document.body.getAttribute("data-theme")==="light";
+      return {
+        grid: isLight ? "rgba(12,20,38,0.12)" : "rgba(255,255,255,0.10)",
+        ticks: isLight ? "rgba(12,20,38,0.70)" : "rgba(255,255,255,0.70)",
+        line: "rgba(124,92,255,0.90)",
+        fill: "rgba(124,92,255,0.18)",
+        line2: "rgba(47,155,255,0.90)",
+        fill2: "rgba(47,155,255,0.14)",
+      }
+    }
+
+    function initCharts(){
+      const c = chartColor();
+
+      App.charts.series = new Chart($("#chartSeries"), {
+        type: "line",
+        data: {
+          labels: [],
+          datasets: [
+            {
+              label: "Métrica",
+              data: [],
+              borderColor: c.line,
+              backgroundColor: c.fill,
+              fill: true,
+              borderWidth: 2,
+              tension: 0.25,
+              pointRadius: 2,
+              pointHoverRadius: 5,
+            },
+            {
+              label: "Período anterior",
+              data: [],
+              borderColor: c.line2,
+              backgroundColor: c.fill2,
+              fill: false,
+              borderWidth: 2,
+              tension: 0.25,
+              pointRadius: 0,
+              borderDash: [6,6],
+              hidden: false,
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { labels: { color: c.ticks } },
+            tooltip: { enabled: true }
+          },
+          scales: {
+            x: {
+              grid: { color: c.grid },
+              ticks: { color: c.ticks }
+            },
+            y: {
+              grid: { color: c.grid },
+              ticks: { color: c.ticks }
+            }
+          }
+        }
+      });
+
+      App.charts.dist = new Chart($("#chartDist"), {
+        type: "doughnut",
+        data: {
+          labels: [],
+          datasets: [{
+            data: [],
+            backgroundColor: [
+              "rgba(124,92,255,0.85)",
+              "rgba(47,155,255,0.80)",
+              "rgba(24,194,156,0.78)",
+              "rgba(255,176,32,0.80)",
+              "rgba(255,91,110,0.78)",
+              "rgba(255,255,255,0.20)"
+            ],
+            borderColor: "rgba(255,255,255,0.08)",
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive:true,
+          maintainAspectRatio:false,
+          plugins:{
+            legend:{ position:"bottom", labels:{ color: c.ticks } }
+          }
+        }
+      });
+
+      // Drill by click (series)
+      $("#chartSeries").onclick = (evt) => {
+        const points = App.charts.series.getElementsAtEventForMode(evt, "nearest", { intersect:false }, true);
+        if (!points.length) return;
+        const idx = points[0].index;
+        const label = App.charts.series.data.labels[idx];
+        activateDrill({ mode: $("#aGroupBy").value, key: label, via: "chart-series" });
+      };
+
+      // Drill by click (dist)
+      $("#chartDist").onclick = (evt) => {
+        const points = App.charts.dist.getElementsAtEventForMode(evt, "nearest", { intersect:true }, true);
+        if (!points.length) return;
+        const idx = points[0].index;
+        const label = App.charts.dist.data.labels[idx];
+        activateDrill({ mode: "dimension", key: label, via: "chart-dist" });
+      };
+    }
+
+    function applyThemeToCharts(){
+      // Recria cores (Chart.js não atualiza tudo perfeito só mudando options)
+      if (App.charts.series) App.charts.series.destroy();
+      if (App.charts.dist) App.charts.dist.destroy();
+      initCharts();
+      updateAnalyses(); // redesenha
+    }
+
+    /*********************
+     * ANALYTICS ENGINE
+     *********************/
+    function getAnalysisFilters(){
+      const start = new Date($("#aInicio").value + "T00:00:00");
+      const end   = new Date($("#aFim").value + "T00:00:00");
+      return {
+        start, end,
+        status: $("#aStatus").value,
+        groupBy: $("#aGroupBy").value,
+        dimension: $("#aDimension").value,
+        metric: $("#aMetric").value,
+        compare: $("#aCompare").value,
+        topN: Number($("#aTopN").value || 8),
+      };
+    }
+
+    function filterSales(filters){
+      return App.sales.filter(s => {
+        if (!inRange(s.datetime, filters.start, filters.end)) return false;
+        if (filters.status !== "all" && s.status !== filters.status) return false;
+        return true;
+      });
+    }
+
+    function prevPeriod(filters){
+      const days = Math.max(1, Math.round((filters.end - filters.start)/86400000) + 1);
+      const prevEnd = new Date(filters.start.getTime() - 1);
+      const prevStart = new Date(prevEnd.getTime() - (days-1)*86400000);
+      return { prevStart, prevEnd };
+    }
+
+    function aggregateSeries(rows, groupBy, metric){
+      const m = new Map();
+      for(const r of rows){
+        const k = groupKey(r.datetime, groupBy);
+        let add = 0;
+        if (metric === "value") add = Number(r.value || 0);
+        else if (metric === "items") add = Number(r.items || 0);
+        else add = 1; // orders
+        m.set(k, (m.get(k) || 0) + add);
+      }
+      const labels = [...m.keys()].sort();
+      const values = labels.map(l => m.get(l));
+      return { labels, values };
+    }
+
+    function aggregateDist(rows, dimension){
+      const field = dimension; // category/product/payment
+      const m = new Map();
+      for(const r of rows){
+        const key = r[field] || "—";
+        m.set(key, (m.get(key) || 0) + Number(r.value || 0));
+      }
+      const entries = [...m.entries()].sort((a,b)=> b[1]-a[1]);
+      return entries;
+    }
+
+    function updateAnalyses(){
+      const f = getAnalysisFilters();
+      const rows = filterSales(f);
+
+      // Pills
+      $("#aResultPill").textContent = `${rows.length} vendas no período`;
+      $("#aComparePill").textContent = `Comparação: ${f.compare === "prev" ? "período anterior" : "desativada"}`;
+      $("#aSeriesLegend").textContent = `Métrica: ${$("#aMetric").selectedOptions[0].textContent}`;
+      $("#aDistLegend").textContent = `Dimensão: ${$("#aDimension").selectedOptions[0].textContent}`;
+
+      // KPIs
+      const fat = rows.reduce((a,r)=>a+Number(r.value||0),0);
+      const orders = rows.length;
+      const items = rows.reduce((a,r)=>a+Number(r.items||0),0);
+      const ticket = orders ? fat/orders : 0;
+      const pend = rows.filter(r=>r.status==="Pendente").length;
+      const pendPct = orders ? (pend/orders)*100 : 0;
+
+      let pfat=0, porders=0, pticket=0;
+      if (f.compare === "prev"){
+        const { prevStart, prevEnd } = prevPeriod(f);
+        const prevRows = App.sales.filter(s=>{
+          if (!inRange(s.datetime, prevStart, prevEnd)) return false;
+          if (f.status !== "all" && s.status !== f.status) return false;
+          return true;
+        });
+        pfat = prevRows.reduce((a,r)=>a+Number(r.value||0),0);
+        porders = prevRows.length;
+        pticket = porders ? pfat/porders : 0;
+      } else {
+        pfat = 0; porders = 0; pticket = 0;
+      }
+
+      $("#aKpiFat").textContent = brl(fat);
+      $("#aKpiOrders").textContent = String(orders);
+      $("#aKpiTicket").textContent = brl(ticket);
+      $("#aKpiPending").textContent = `${pendPct.toFixed(1)}%`;
+
+      const dFat = (f.compare==="prev") ? deltaPct(fat, pfat) : null;
+      const dOrders = (f.compare==="prev") ? deltaPct(orders, porders) : null;
+      const dTicket = (f.compare==="prev") ? deltaPct(ticket, pticket) : null;
+
+      setTag($("#aKpiFatTag"), dFat);
+      setTag($("#aKpiOrdersTag"), dOrders);
+      setTag($("#aKpiTicketTag"), dTicket);
+
+      $("#aKpiFatDelta").textContent = f.compare==="prev" ? "vs período anterior" : "—";
+      $("#aKpiOrdersDelta").textContent = f.compare==="prev" ? "vs período anterior" : "—";
+      $("#aKpiTicketDelta").textContent = f.compare==="prev" ? "vs período anterior" : "—";
+
+      // Series chart
+      const series = aggregateSeries(rows, f.groupBy, f.metric);
+
+      App.charts.series.data.labels = series.labels;
+      App.charts.series.data.datasets[0].label = $("#aMetric").selectedOptions[0].textContent;
+      App.charts.series.data.datasets[0].data = series.values;
+
+      // prev series
+      if (f.compare === "prev"){
+        const { prevStart, prevEnd } = prevPeriod(f);
+        const prevRows = App.sales.filter(s=>{
+          if (!inRange(s.datetime, prevStart, prevEnd)) return false;
+          if (f.status !== "all" && s.status !== f.status) return false;
+          return true;
+        });
+        const prevSeries = aggregateSeries(prevRows, f.groupBy, f.metric);
+
+        // Alinha labels: mantém labels do período atual e coloca 0 quando não houver
+        const prevMap = new Map(prevSeries.labels.map((l,i)=>[l, prevSeries.values[i]]));
+        App.charts.series.data.datasets[1].data = series.labels.map(l => prevMap.get(l) || 0);
+        App.charts.series.data.datasets[1].hidden = false;
+      } else {
+        App.charts.series.data.datasets[1].data = [];
+        App.charts.series.data.datasets[1].hidden = true;
+      }
+
+      App.charts.series.update();
+
+      // Distribution chart (TopN)
+      const distEntries = aggregateDist(rows, f.dimension);
+      const top = distEntries.slice(0, f.topN);
+      App.charts.dist.data.labels = top.map(x=>x[0]);
+      App.charts.dist.data.datasets[0].data = top.map(x=>Math.round(x[1]*100)/100);
+      App.charts.dist.update();
+
+      // Drill table data
+      App.tables.drill.setData(rows);
+
+      // Apply drill filter if active
+      if (App.drill.active){
+        applyDrillFilter(rows);
+      } else {
+        $("#drillInfo").textContent = "Drill‑down: inativo";
+      }
+    }
+
+    function activateDrill({ mode, key, via }){
+      App.drill.active = true;
+      App.drill.mode = mode;
+      App.drill.key = key;
+      App.drill.via = via;
+      applyDrillFilter(App.tables.drill.getData());
+      toast("Drill‑down aplicado", `Filtro: ${mode === "dimension" ? "dimensão" : mode} = ${key}`);
+    }
+
+    function applyDrillFilter(currentRows){
+      const f = getAnalysisFilters();
+
+      if (App.drill.mode === "dimension"){
+        const dim = f.dimension;
+        App.tables.drill.setFilter((row)=>{
+          return String(row[dim]||"") === String(App.drill.key);
+        });
+        $("#drillInfo").textContent = `Drill‑down (distribuição): ${f.dimension} = ${App.drill.key}`;
+        return;
+      }
+
+      const gmode = App.drill.mode; // day/week/month
+      App.tables.drill.setFilter((row)=>{
+        return groupKey(row.datetime, gmode) === App.drill.key;
+      });
+      $("#drillInfo").textContent = `Drill‑down (série): ${gmode} = ${App.drill.key}`;
+    }
+
+    function clearDrill(){
+      App.drill.active = false;
+      App.drill.key = null;
+      App.drill.mode = null;
+      App.drill.via = null;
+      App.tables.drill.clearFilter(true);
+      $("#drillInfo").textContent = "Drill‑down: inativo";
+    }
+
+    /*********************
+     * REPORTS (localStorage)
+     *********************/
+    const REPORTS_KEY = "fs_reports_v1";
+
+    function loadReports(){
+      try{
+        App.reports = JSON.parse(localStorage.getItem(REPORTS_KEY) || "[]");
+      } catch { App.reports = []; }
+      refreshReportSelect();
+    }
+
+    function refreshReportSelect(){
+      const sel = $("#aReportSelect");
+      sel.innerHTML = "";
+      const opt0 = document.createElement("option");
+      opt0.value = "";
+      opt0.textContent = "— Selecione —";
+      sel.appendChild(opt0);
+
+      App.reports.forEach((r, idx)=>{
+        const opt = document.createElement("option");
+        opt.value = String(idx);
+        opt.textContent = r.name;
+        sel.appendChild(opt);
+      });
+    }
+
+    function saveCurrentReport(){
+      const name = prompt("Nome do relatório:", `Relatório ${new Date().toLocaleString("pt-BR")}`);
+      if (!name) return;
+      const f = getAnalysisFilters();
+      const payload = {
+        name: name.trim(),
+        createdAt: new Date().toISOString(),
+        filters: {
+          aInicio: $("#aInicio").value,
+          aFim: $("#aFim").value,
+          aStatus: f.status,
+          aGroupBy: f.groupBy,
+          aDimension: f.dimension,
+          aMetric: f.metric,
+          aCompare: f.compare,
+          aTopN: String(f.topN),
+        }
+      };
+      App.reports.unshift(payload);
+      localStorage.setItem(REPORTS_KEY, JSON.stringify(App.reports));
+      refreshReportSelect();
+      toast("Relatório salvo", `"${payload.name}" foi salvo localmente neste navegador.`);
+    }
+
+    function loadSelectedReport(){
+      const idx = Number($("#aReportSelect").value);
+      if (Number.isNaN(idx)) return;
+      const r = App.reports[idx];
+      if (!r) return;
+
+      $("#aInicio").value = r.filters.aInicio;
+      $("#aFim").value = r.filters.aFim;
+      $("#aStatus").value = r.filters.aStatus;
+      $("#aGroupBy").value = r.filters.aGroupBy;
+      $("#aDimension").value = r.filters.aDimension;
+      $("#aMetric").value = r.filters.aMetric;
+      $("#aCompare").value = r.filters.aCompare;
+      $("#aTopN").value = r.filters.aTopN || "8";
+
+      clearDrill();
+      updateAnalyses();
+      toast("Relatório carregado", `Aplicado: "${r.name}"`);
+    }
+
+    function deleteSelectedReport(){
+      const idx = Number($("#aReportSelect").value);
+      if (Number.isNaN(idx)) return;
+      const r = App.reports[idx];
+      if (!r) return;
+      if (!confirm(`Excluir o relatório "${r.name}"?`)) return;
+      App.reports.splice(idx,1);
+      localStorage.setItem(REPORTS_KEY, JSON.stringify(App.reports));
+      refreshReportSelect();
+      toast("Relatório excluído", "O relatório foi removido deste navegador.");
+    }
+
+    function clearReportFilters(){
+      // volta ao padrão “últimos 14 dias”
+      const end = new Date("2025-12-22T00:00:00"); // fixa pra demo; em produção: new Date()
+      const start = new Date(end.getTime() - 13*86400000);
+      $("#aInicio").value = start.toISOString().slice(0,10);
+      $("#aFim").value = end.toISOString().slice(0,10);
+      $("#aStatus").value = "all";
+      $("#aGroupBy").value = "day";
+      $("#aDimension").value = "category";
+      $("#aMetric").value = "value";
+      $("#aCompare").value = "prev";
+      $("#aTopN").value = "8";
+      clearDrill();
+      updateAnalyses();
+    }
+
+    /*********************
+     * EXPORTS
+     *********************/
+    function exportDrillCSV(){
+      App.tables.drill.download("csv", "falconsstock-analises.csv");
+    }
+    function exportDrillJSON(){
+      const data = App.tables.drill.getData(true);
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type:"application/json;charset=utf-8" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "falconsstock-analises.json";
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
+
+    /*********************
+     * DATA INTEGRATIONS: CSV + API
+     *********************/
+    function parseCSV(text){
+      // parser simples (sem aspas complexas). Para produção, use PapaParse.
+      const lines = text.split(/\r?\n/).filter(l=>l.trim().length);
+      const header = lines.shift().split(",").map(s=>s.trim());
+      const idx = (name) => header.indexOf(name);
+
+      const required = ["id","datetime","customer","items","value","status","payment","category","product"];
+      for (const r of required){
+        if (idx(r) === -1) throw new Error(`CSV inválido. Coluna obrigatória ausente: ${r}`);
+      }
+
+      return lines.map(line=>{
+        const parts = line.split(",").map(s=>s.trim());
+        return {
+          id: parts[idx("id")],
+          datetime: parts[idx("datetime")],
+          customer: parts[idx("customer")],
+          items: Number(parts[idx("items")] || 0),
+          value: Number(parts[idx("value")] || 0),
+          status: parts[idx("status")] || "Concluída",
+          payment: parts[idx("payment")] || "PIX",
+          category: parts[idx("category")] || "—",
+          product: parts[idx("product")] || "—",
+        };
+      }).filter(x => x.id && x.datetime);
+    }
+
+    async function loadDataFromUI(){
+      const mode = $("#dataSource").value;
+
+      if (mode === "demo"){
+        App.dataMode = "demo";
+        loadDemoData();
+        $("#dataBadge").textContent = "Dados: Demo";
+        toast("Dados carregados", "Fonte: Demo (interno).");
+        refreshOperationalTables();
+        clearReportFilters(); // também atualiza análises
+        return;
+      }
+
+      if (mode === "csv"){
+        const file = $("#csvFile").files?.[0];
+        if (!file){
+          toast("CSV não selecionado", "Escolha um arquivo CSV para importar.");
+          return;
+        }
+        const text = await file.text();
+        let rows;
+        try{
+          rows = parseCSV(text);
+        } catch (e){
+          toast("Falha ao importar CSV", e.message || String(e));
+          return;
+        }
+        App.dataMode = "csv";
+        App.sales = rows.sort((a,b)=> new Date(b.datetime)-new Date(a.datetime));
+        $("#dataBadge").textContent = "Dados: CSV";
+        toast("CSV importado", `${rows.length} registros de vendas carregados.`);
+        refreshOperationalTables();
+        clearReportFilters();
+        return;
+      }
+
+      if (mode === "api"){
+        const url = $("#apiUrl").value.trim();
+        if (!url){
+          toast("URL vazia", "Informe a URL do endpoint JSON.");
+          return;
+        }
+        try{
+          const res = await fetch(url, { method:"GET" });
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const json = await res.json();
+          if (!Array.isArray(json)) throw new Error("JSON esperado: array de vendas.");
+
+          // normaliza
+          App.sales = json.map(x=>({
+            id: x.id,
+            datetime: x.datetime,
+            customer: x.customer,
+            items: Number(x.items||0),
+            value: Number(x.value||0),
+            status: x.status || "Concluída",
+            payment: x.payment || "PIX",
+            category: x.category || "—",
+            product: x.product || "—",
+          })).filter(x=>x.id && x.datetime)
+            .sort((a,b)=> new Date(b.datetime)-new Date(a.datetime));
+
+          App.dataMode = "api";
+          $("#dataBadge").textContent = "Dados: API";
+          toast("API conectada", `${App.sales.length} registros carregados.`);
+          refreshOperationalTables();
+          clearReportFilters();
+        } catch (e){
+          toast("Falha ao conectar API", `${e.message || e}. (Dica: verifique CORS no servidor)`);
+        }
+      }
+    }
+
+    function updateDataSourceUI(){
+      const mode = $("#dataSource").value;
+      $("#csvField").style.display = (mode === "csv") ? "block" : "none";
+      $("#apiField").style.display = (mode === "api") ? "block" : "none";
+    }
+
+    /*********************
+     * VISÃO GERAL KPIs
+     *********************/
+    function computeTodayKPIs(){
+      // Na demo, consideramos "hoje" como 2025-12-22 para ficar consistente
+      const today = new Date("2025-12-22T00:00:00");
+      const yesterday = new Date(today.getTime() - 86400000);
+
+      const todayRows = App.sales.filter(s => dayKey(s.datetime) === dayKey(today));
+      const yRows = App.sales.filter(s => dayKey(s.datetime) === dayKey(yesterday));
+
+      const tFat = todayRows.reduce((a,r)=>a+Number(r.value||0),0);
+      const yFat = yRows.reduce((a,r)=>a+Number(r.value||0),0);
+
+      const tItems = todayRows.reduce((a,r)=>a+Number(r.items||0),0);
+      const yItems = yRows.reduce((a,r)=>a+Number(r.items||0),0);
+
+      const tOrders = todayRows.length;
+      const yOrders = yRows.length;
+
+      const tTicket = tOrders ? tFat/tOrders : 0;
+      const yTicket = yOrders ? yFat/yOrders : 0;
+
+      const lowStock = App.products.filter(p => Number(p.stock) <= 4).length;
+
+      $("#kpiHojeReceita").textContent = brl(tFat);
+      $("#kpiHojeItens").textContent = String(tItems);
+      $("#kpiHojeTicket").textContent = brl(tTicket);
+      $("#kpiEstoqueBaixo").textContent = String(lowStock);
+
+      const dFat = deltaPct(tFat, yFat);
+      const dItems = deltaPct(tItems, yItems);
+      const dTicket = deltaPct(tTicket, yTicket);
+
+      setTag($("#kpiHojeReceitaDeltaTag"), dFat);
+      $("#kpiHojeReceitaDelta").textContent = "vs ontem";
+
+      setTag($("#kpiHojeItensDeltaTag"), dItems);
+      $("#kpiHojeItensDelta").textContent = "vs ontem";
+
+      setTag($("#kpiHojeTicketDeltaTag"), dTicket);
+      $("#kpiHojeTicketDelta").textContent = "vs ontem";
+    }
+
+    /*********************
+     * NAV
+     *********************/
+    const pageMeta = {
+      visao: { title:"Visão Geral", sub:"Resumo operacional com indicadores-chave e últimas atividades." },
+      pdv: { title:"PDV / Caixa", sub:"Fluxo de venda e fechamento (modo demonstrativo)." },
+      produtos: { title:"Produtos", sub:"Catálogo operacional com tabela avançada." },
+      mov: { title:"Movimentações", sub:"Controle de entradas/saídas/ajustes com rastreabilidade." },
+      analises: { title:"Análises", sub:"Relatórios dinâmicos, gráficos interativos e exportações." },
+      config: { title:"Configurações", sub:"Preferências e dados da empresa." },
+    };
+
+    function gotoPage(key){
+      $$(".nav a[data-page]").forEach(a => a.classList.toggle("active", a.dataset.page === key));
+      $$(".page").forEach(p => p.classList.remove("active"));
+      $("#page-"+key).classList.add("active");
+      $("#topTitle").textContent = pageMeta[key].title;
+      $("#topSub").textContent = pageMeta[key].sub;
+
+      if (key === "analises"){
+        updateAnalyses();
+        $("#aTableSearch").focus();
+      }
+    }
+
+    /*********************
+     * GLOBAL SEARCH (Ctrl+K)
+     *********************/
+    function globalSearch(q){
+      const query = (q||"").toLowerCase().trim();
+      if (!query){
+        toast("Busca global", "Digite para buscar em vendas/produtos/movimentações.");
+        return;
+      }
+
+      const salesHits = App.sales.filter(s => [s.id,s.customer,s.product,s.category,s.payment,s.status].some(x => String(x||"").toLowerCase().includes(query))).slice(0,10);
+      const prodHits = App.products.filter(p => [p.code,p.name,p.category,p.status].some(x => String(x||"").toLowerCase().includes(query))).slice(0,10);
+      const movHits = App.movements.filter(m => [m.id,m.type,m.product,m.owner].some(x => String(x||"").toLowerCase().includes(query))).slice(0,10);
+
+      toast("Resultados (prévia)", `${salesHits.length} vendas • ${prodHits.length} produtos • ${movHits.length} movimentações`);
+    }
+
+    /*********************
+     * INIT
+     *********************/
+    function init(){
+      setTheme(getTheme());
+
+      // Demo data
+      loadDemoData();
+
+      // Init UI defaults
+      $("#timezone").value = "America/Sao_Paulo";
+
+      initTables();
+      initCharts();
+      refreshOperationalTables();
+      computeTodayKPIs();
+
+      // Analyses defaults
+      clearReportFilters();
+      loadReports();
+
+      // Events: nav
+      $$(".nav a[data-page]").forEach(a=>{
+        a.addEventListener("click", (e)=>{
+          e.preventDefault();
+          gotoPage(a.dataset.page);
+        });
+      });
+
+      // Login
+      $("#btnLogin").addEventListener("click", ()=>{
+        const pass = $("#senha").value;
+        if (String(pass) !== "admin"){
+          toast("Acesso negado", "Senha incorreta (dica: use 'admin' no modo demo).");
+          return;
+        }
+        $("#login").style.display = "none";
+        $("#app").style.display = "grid";
+        $("#globalSearch").focus();
+        toast("Bem-vindo", "Painel carregado em modo demo.");
+      });
+      $("#senha").addEventListener("keydown", (e)=>{
+        if (e.key === "Enter") $("#btnLogin").click();
+      });
+
+      // Logout
+      $("#btnLogout").addEventListener("click", (e)=>{
+        e.preventDefault();
+        $("#app").style.display = "none";
+        $("#login").style.display = "grid";
+        $("#senha").value = "";
+        toast("Sessão encerrada", "Você saiu do sistema (modo demo).");
+      });
+
+      // Theme
+      $("#btnTheme").addEventListener("click", ()=>{
+        const next = document.body.getAttribute("data-theme")==="light" ? "dark" : "light";
+        setTheme(next);
+        applyThemeToCharts();
+      });
+
+      // Help
+      $("#btnHelp").addEventListener("click", ()=>{
+        $("#helpPanel").style.display = ($("#helpPanel").style.display === "none") ? "block" : "none";
+      });
+      $("#btnCloseHelp").addEventListener("click", ()=> $("#helpPanel").style.display = "none");
+
+      // Global search + shortcuts
+      $("#globalSearch").addEventListener("input", (e)=> globalSearch(e.target.value));
+      document.addEventListener("keydown", (e)=>{
+        if (e.ctrlKey && e.key.toLowerCase() === "k"){
+          e.preventDefault();
+          $("#globalSearch").focus();
+        }
+        if (e.key === "Escape"){
+          $("#helpPanel").style.display = "none";
+          // não fecha modais (não implementados aqui)
+        }
+        if (!e.ctrlKey && !e.metaKey && !e.altKey){
+          if (e.key.toLowerCase() === "a") gotoPage("analises");
+          if (e.key.toLowerCase() === "v") gotoPage("visao");
+        }
+      });
+
+      // Analyses actions
+      $("#btnAplicarAnalise").addEventListener("click", ()=>{ clearDrill(); updateAnalyses(); });
+      $("#btnClearDrill").addEventListener("click", clearDrill);
+      $("#btnExportCSV").addEventListener("click", exportDrillCSV);
+      $("#btnExportJSON").addEventListener("click", exportDrillJSON);
+      $("#btnSalvarRelatorio").addEventListener("click", saveCurrentReport);
+      $("#btnCarregarRelatorio").addEventListener("click", loadSelectedReport);
+      $("#btnExcluirRelatorio").addEventListener("click", deleteSelectedReport);
+      $("#btnLimparRelatorio").addEventListener("click", clearReportFilters);
+
+      $("#aTableSearch").addEventListener("input", (e)=>{
+        const q = e.target.value.trim().toLowerCase();
+        if (!q){ App.tables.drill.clearFilter(true); if (App.drill.active) applyDrillFilter(); return; }
+        // filtro combinado (busca geral)
+        App.tables.drill.setFilter((row)=>{
+          const str = [row.id,row.customer,row.product,row.category,row.payment,row.status,row.datetime]
+            .map(x=>String(x||"")).join(" ").toLowerCase();
+          return str.includes(q);
+        });
+      });
+
+      $("#aTopN").addEventListener("change", updateAnalyses);
+
+      // Export últimas
+      $("#btnExportUltimas").addEventListener("click", ()=>{
+        App.tables.ultimas.download("csv", "falconsstock-ultimas-vendas.csv");
+      });
+
+      // Data source UI + load
+      $("#dataSource").addEventListener("change", updateDataSourceUI);
+      updateDataSourceUI();
+
+      $("#btnLoadData").addEventListener("click", loadDataFromUI);
+      $("#btnResetData").addEventListener("click", ()=>{
+        $("#dataSource").value = "demo";
+        updateDataSourceUI();
+        loadDataFromUI();
+      });
+
+      // Config
+      $("#btnSalvarConfig").addEventListener("click", ()=>{
+        toast("Configurações (demo)", "Configurações salvas localmente (simulação).");
+      });
+
+      // PDV buttons (demo)
+      $("#btnNovaVenda1").addEventListener("click", ()=> toast("Nova Venda (demo)", "Aqui você abriria o modal/fluxo de PDV."));
+      $("#btnNovaVenda2").addEventListener("click", ()=> toast("Nova Venda (demo)", "Aqui você abriria o modal/fluxo de PDV."));
+      $("#btnNovoProduto").addEventListener("click", ()=> toast("Novo Produto (demo)", "Aqui você abriria o modal de cadastro."));
+      $("#btnNovaMov").addEventListener("click", ()=> toast("Nova Movimentação (demo)", "Aqui você abriria o modal de movimentação."));
+      $("#btnRelatorioMov").addEventListener("click", ()=> { gotoPage("analises"); toast("Relatório", "Use a aba Análises para relatórios e exportações."); });
+
+      // When timezone changes, refresh table formatters
+      $("#timezone").addEventListener("change", ()=>{
+        refreshOperationalTables();
+        updateAnalyses();
+      });
+    }
+
+    // Boot
+    document.addEventListener("DOMContentLoaded", init);
+  </script>
+</body>
+</html>
