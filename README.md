@@ -13,6 +13,10 @@ integração de estoque.
 
 ## Visão Geral
 
+<div align="center">
+  <img src="docs/screenshots/api_estoque_client.png" alt="Interface de Teste do Cliente da API de Estoque" width="750" />
+</div>
+
 O serviço expõe endpoints REST para consulta e manipulação de dados de estoque, conectando-se a um
 banco MySQL definido por um schema versionado. A configuração (banco, CORS, portas) é feita por
 variáveis de ambiente, e um front-end de teste em HTML permite exercitar a API sem ferramentas externas.
