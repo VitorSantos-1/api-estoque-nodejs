@@ -78,3 +78,42 @@ index.client.html   -> Front-end simples de teste da API
 
 José Vitor Santos Pinheiro — Análise de Dados e Inteligência Comercial (Varejo, Indústria e Distribuição).
 Contato: vytorsantt@gmail.com
+
+## 🗺️ Modelo de Dados (DER)
+
+Esquema do banco da API de estoque (MySQL). Renderizado pelo GitHub via Mermaid. *Dados fictícios de demonstração.*
+
+```mermaid
+erDiagram
+    products {
+        bigint id PK
+        varchar barcode UK
+        varchar name
+        varchar brand
+        varchar category
+        varchar sku UK
+        decimal price
+        decimal cost
+        int quantity
+        enum status "ATIVO|INATIVO"
+    }
+    suppliers {
+        bigint id PK
+        varchar name
+        varchar email
+        varchar phone
+        enum status "ATIVO|INATIVO"
+    }
+    settings {
+        int id PK "linha fixa = 1"
+        varchar company_name
+        int low_stock_alert
+    }
+    orders {
+        bigint id PK
+        decimal total
+        datetime created_at
+    }
+```
+
+**Observação:** protótipo REST (Node.js + Express). As tabelas não declaram FKs entre si; os vínculos são tratados na camada de aplicação.
